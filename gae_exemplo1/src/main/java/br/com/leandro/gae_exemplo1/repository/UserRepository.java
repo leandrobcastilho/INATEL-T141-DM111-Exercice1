@@ -242,13 +242,13 @@ public class UserRepository {
 
     public void updateUserLogin(User user) {
         boolean canUseCache = true;
-        boolean saveOnCache = true;
 
         Cache cache;
         try {
             CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
             cache = cacheFactory.createCache(Collections.emptyMap());
 
+            boolean saveOnCache = true;
             if (cache.containsKey(user.getEmail())) {
                 Date lastLogin = (Date) cache.get(user.getEmail());
                 if ((Calendar.getInstance().getTime().getTime() - lastLogin.getTime()) < 30000) {
@@ -267,8 +267,8 @@ public class UserRepository {
         if (!canUseCache) {
             user.setLastLogin((Date) Calendar.getInstance().getTime());
             try {
-                this.saveUser(user);
-            } catch (UserAlreadyExistsException e) {
+                this.updateUser(user, user.getEmail());
+            } catch (UserAlreadyExistsException | UserNotFoundException e ) {
                 log.severe("Falha ao atualizar último login do usuário");
             }
         }

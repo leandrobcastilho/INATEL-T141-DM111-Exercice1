@@ -27,7 +27,7 @@ public class UserService implements UserDetailsService {
         boolean isPresent = optUser.isPresent();
         if (isPresent) {
             log.info("UserService: loadUserByUsername - isPresent " + isPresent);
-            //userRepository.updateUserLogin(optUser.get());
+            userRepository.updateUserLogin(optUser.get());
             return optUser.get();
         } else {
             log.info("UserService: Usuário não encontrado");

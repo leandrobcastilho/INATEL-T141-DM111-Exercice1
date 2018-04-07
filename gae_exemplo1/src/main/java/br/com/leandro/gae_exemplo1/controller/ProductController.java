@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Optional;
 import java.util.logging.Logger;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,17 +41,37 @@ public class ProductController {
     public ResponseEntity<Product> getProduct(@PathVariable int code) {
 
         System.out.println("getUsers");
-        DatastoreService dataStore = DatastoreServiceFactory.getDatastoreService();
-        Query.Filter codeFilter = new Query.FilterPredicate(PROPERTY_PRODUCTS_CODE, Query.FilterOperator.EQUAL, code);
-        Query query = new Query(KIND_PRODUCTS).setFilter(codeFilter);
-        Entity productEntity = dataStore.prepare(query).asSingleEntity();
-        if (productEntity != null) {
-            Product product = entityToProduct(productEntity);
+        Optional<Product> opProduct = findProduct(code);
+        if( opProduct.isPresent() ){
+            Product product = opProduct.get();
             return new ResponseEntity<Product>(product, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
+        //DatastoreService dataStore = DatastoreServiceFactory.getDatastoreService();
+        //Query.Filter codeFilter = new Query.FilterPredicate(PROPERTY_PRODUCTS_CODE, Query.FilterOperator.EQUAL, code);
+        //Query query = new Query(KIND_PRODUCTS).setFilter(codeFilter);
+        //Entity productEntity = dataStore.prepare(query).asSingleEntity();
+        //if (productEntity != null) {
+        //    Product product = entityToProduct(productEntity);
+        //    return new ResponseEntity<Product>(product, HttpStatus.OK);
+        //} else {
+        //    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        //}
 
+    }
+
+    public static Optional<Product> findProduct(int code) {
+
+        DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+        Query.Filter codeFilter = new Query.FilterPredicate(PROPERTY_PRODUCTS_CODE, Query.FilterOperator.EQUAL, code);
+        Query query = new Query(KIND_PRODUCTS).setFilter(codeFilter);
+        Entity productEntity = datastore.prepare(query).asSingleEntity();
+        if (productEntity != null) {
+            return Optional.ofNullable(entityToProduct(productEntity));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('" + CheckRole.ROLE_USER + "','" + CheckRole.ROLE_ADMIN + "')")
@@ -158,7 +179,7 @@ public class ProductController {
 
     }
 
-    private Product entityToProduct(Entity productEntity) {
+    private static Product entityToProduct(Entity productEntity) {
 
         Product product = new Product();
         product.setId(productEntity.getKey().getId());

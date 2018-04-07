@@ -33,6 +33,7 @@ public class SpringSecurityConfigHttpBasic extends WebSecurityConfigurerAdapter 
                 .authorizeRequests()
                 .antMatchers("_ah/**").permitAll()
                 .antMatchers("/api/test/**").anonymous()
+                .antMatchers("/api/cron/testcron/**").anonymous()
                 //.antMatchers("/api/products/**").authenticated()
                 .anyRequest().authenticated()
                 .and().httpBasic()
